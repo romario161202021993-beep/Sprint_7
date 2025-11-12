@@ -6,7 +6,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import ru.yandex.praktikum.model.CreateOrderResponse;
 import ru.yandex.praktikum.model.Order;
-import ru.yandex.praktikum.steps.Steps;
+import ru.yandex.praktikum.steps.OrderSteps;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,7 +41,7 @@ public class CreateOrderTest {
         Order order = new Order("Иван", "Иванов", "Москва, ул. Тестовая, д. 1", "4", "+79991234567");
         order.setColor(colors);
 
-        CreateOrderResponse response = Steps.createOrder(order);
+        CreateOrderResponse response = OrderSteps.createOrder(order);
 
         assertNotNull(response);
         assertNotNull("Трек-номер заказа должен быть в ответе", response.getTrack());
