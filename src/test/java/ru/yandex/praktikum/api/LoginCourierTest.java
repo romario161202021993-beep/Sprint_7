@@ -7,15 +7,14 @@ import org.junit.Test;
 import ru.yandex.praktikum.BaseTest;
 import ru.yandex.praktikum.helpers.DataGenerator;
 import ru.yandex.praktikum.model.Courier;
+import ru.yandex.praktikum.model.CreateCourierResponse;
 import ru.yandex.praktikum.model.LoginCourier;
 import ru.yandex.praktikum.steps.CourierSteps;
-
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.*;
 
 public class LoginCourierTest extends BaseTest {
-
     private String testLogin;
     private String testPassword;
     private String testFirstName;
@@ -29,7 +28,10 @@ public class LoginCourierTest extends BaseTest {
         testPassword = DataGenerator.getRandomPassword();
         testFirstName = DataGenerator.getRandomFirstName();
         Courier courier = new Courier(testLogin, testPassword, testFirstName);
-        CourierSteps.createCourier(courier);
+        CreateCourierResponse createResponse = CourierSteps.createCourier(courier);
+        assertTrue("Курьер должен быть создан", createResponse.getOk());
+        // Логинимся, чтобы получить ID для удаления в @After
+        this.courierId = CourierSteps.loginCourier(new LoginCourier(testLogin, testPassword)).getId();
     }
 
     @Test
@@ -39,13 +41,13 @@ public class LoginCourierTest extends BaseTest {
         ru.yandex.praktikum.model.LoginCourierResponse response = CourierSteps.loginCourier(loginData);
         assertNotNull(response);
         assertNotNull("ID курьера должен быть в ответе", response.getId());
-        courierId = response.getId(); // Сохраняем ID для удаления в @After
     }
 
     @Test
     @DisplayName("Нельзя залогиниться без логина")
     public void cannotLoginWithoutLogin() {
         LoginCourier loginData = new LoginCourier(null, testPassword);
+
         given()
                 .header("Content-type", "application/json")
                 .body(loginData)
@@ -59,6 +61,7 @@ public class LoginCourierTest extends BaseTest {
     @DisplayName("Нельзя залогиниться без пароля")
     public void cannotLoginWithoutPassword() {
         LoginCourier loginData = new LoginCourier(testLogin, null);
+
         given()
                 .header("Content-type", "application/json")
                 .body(loginData)
@@ -72,6 +75,7 @@ public class LoginCourierTest extends BaseTest {
     @DisplayName("Нельзя залогиниться с неправильным логином")
     public void cannotLoginWithIncorrectLogin() {
         LoginCourier loginData = new LoginCourier("wrong_login", testPassword);
+
         given()
                 .header("Content-type", "application/json")
                 .body(loginData)
@@ -85,6 +89,7 @@ public class LoginCourierTest extends BaseTest {
     @DisplayName("Нельзя залогиниться с неправильным паролем")
     public void cannotLoginWithIncorrectPassword() {
         LoginCourier loginData = new LoginCourier(testLogin, "wrong_password");
+
         given()
                 .header("Content-type", "application/json")
                 .body(loginData)

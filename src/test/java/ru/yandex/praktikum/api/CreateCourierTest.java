@@ -8,14 +8,13 @@ import ru.yandex.praktikum.helpers.DataGenerator;
 import ru.yandex.praktikum.model.Courier;
 import ru.yandex.praktikum.model.CreateCourierResponse;
 import ru.yandex.praktikum.model.LoginCourier;
+import ru.yandex.praktikum.model.LoginCourierResponse;
 import ru.yandex.praktikum.steps.CourierSteps;
-
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.*;
 
 public class CreateCourierTest extends BaseTest {
-
     private Integer createdCourierId;
     private String createdCourierLogin;
 
@@ -45,11 +44,12 @@ public class CreateCourierTest extends BaseTest {
         CreateCourierResponse firstResponse = CourierSteps.createCourier(firstCourier);
         assertTrue("Первый курьер должен быть создан успешно", firstResponse.getOk());
         this.createdCourierLogin = login; // Сохраняем логин для удаления в @After
+
         // Логинимся, чтобы получить ID для удаления
         this.createdCourierId = CourierSteps.loginCourier(new LoginCourier(login, password)).getId();
 
         // Пытаемся создать второго с тем же логином, используя метод из Steps
-        CourierSteps.createCourier(secondCourier); // Этот вызов должен завершиться ошибкой, но мы проверим это ниже
+        CourierSteps.createCourier(secondCourier);
 
         // Проверяем через прямой вызов API, что возвращается 409
         given()
@@ -58,7 +58,7 @@ public class CreateCourierTest extends BaseTest {
                 .post("/api/v1/courier")
                 .then()
                 .statusCode(409)
-                .body("message", equalTo("Этот логин уже используется. Попробуйте другой.")); // <-- Исправлено
+                .body("message", equalTo("Этот логин уже используется"));
     }
 
     @Test
@@ -85,8 +85,8 @@ public class CreateCourierTest extends BaseTest {
                 .body(courier)
                 .post("/api/v1/courier")
                 .then()
-                .statusCode(400) // ОР: Ожидаем 400 Bad Request
-                .body("message", equalTo("Недостаточно данных для создания учетной записи")); // ОР: Ожидаем сообщение
+                .statusCode(400)
+                .body("message", equalTo("Недостаточно данных для создания учетной записи"));
     }
 
     @Test

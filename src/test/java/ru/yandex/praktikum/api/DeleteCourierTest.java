@@ -7,15 +7,14 @@ import ru.yandex.praktikum.BaseTest;
 import ru.yandex.praktikum.helpers.DataGenerator;
 import ru.yandex.praktikum.model.Courier;
 import ru.yandex.praktikum.model.CreateCourierResponse;
+import ru.yandex.praktikum.model.DeleteCourierResponse;
 import ru.yandex.praktikum.model.LoginCourier;
 import ru.yandex.praktikum.steps.CourierSteps;
-
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.*;
 
 public class DeleteCourierTest extends BaseTest {
-
     private String testLogin;
     private String testPassword;
     private String testFirstName;
@@ -37,6 +36,17 @@ public class DeleteCourierTest extends BaseTest {
     @Test
     @DisplayName("Успешное удаление курьера")
     public void deleteCourierSuccessfully() {
+        DeleteCourierResponse response = CourierSteps.deleteCourier(createdCourierId);
+        assertNotNull(response);
+        assertTrue("Поле 'ok' в ответе должно быть true", response.getOk());
+        // Проверяем, что курьер действительно удалён, попробовав залогиниться снова
+        given()
+                .header("Content-type", "application/json")
+                .body(new LoginCourier(testLogin, testPassword))
+                .post("/api/v1/courier/login")
+                .then()
+                .statusCode(404)
+                .body("message", equalTo("Учетная запись не найдена"));
     }
 
     @Test
@@ -45,7 +55,7 @@ public class DeleteCourierTest extends BaseTest {
         given()
                 .delete("/api/v1/courier/")
                 .then()
-                .statusCode(400) // <-- Исправлено: было 404, стало 400
+                .statusCode(400)
                 .body("message", equalTo("Недостаточно данных для удаления курьера"));
     }
 
@@ -53,11 +63,12 @@ public class DeleteCourierTest extends BaseTest {
     @DisplayName("Нельзя удалить курьера с несуществующим ID")
     public void cannotDeleteCourierWithNonExistentId() {
         int nonExistentId = 999999;
+
         given()
                 .delete("/api/v1/courier/{id}", nonExistentId)
                 .then()
                 .statusCode(404)
-                .body("message", equalTo("Курьера с таким id нет.")); // <-- Исправлено: добавлена точка
+                .body("message", equalTo("Курьера с таким id нет"));
     }
 
     @org.junit.After

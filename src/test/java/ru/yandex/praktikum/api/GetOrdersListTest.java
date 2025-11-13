@@ -5,7 +5,6 @@ import org.junit.Test;
 import ru.yandex.praktikum.BaseTest;
 import ru.yandex.praktikum.model.OrdersListResponse;
 import ru.yandex.praktikum.steps.OrderSteps;
-
 import static org.junit.Assert.*;
 
 public class GetOrdersListTest extends BaseTest {

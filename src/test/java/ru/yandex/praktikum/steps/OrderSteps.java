@@ -2,7 +2,6 @@ package ru.yandex.praktikum.steps;
 
 import io.qameta.allure.Step;
 import ru.yandex.praktikum.model.*;
-
 import static io.restassured.RestAssured.given;
 
 public class OrderSteps {
