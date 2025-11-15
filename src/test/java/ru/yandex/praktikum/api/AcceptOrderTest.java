@@ -8,6 +8,7 @@ import ru.yandex.praktikum.helpers.DataGenerator;
 import ru.yandex.praktikum.model.*;
 import ru.yandex.praktikum.steps.CourierSteps;
 import ru.yandex.praktikum.steps.OrderSteps;
+
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.*;
@@ -47,6 +48,10 @@ public class AcceptOrderTest extends BaseTest {
         AcceptOrderResponse acceptResponse = OrderSteps.acceptOrder(orderId, courierId);
         assertNotNull(acceptResponse);
         assertTrue("Поле 'ok' в ответе должно быть true", acceptResponse.getOk());
+        given()
+                .put("/api/v1/orders/accept/{id}?courierId={courierId}", orderId, courierId)
+                .then()
+                .statusCode(200);
     }
 
     @Test
@@ -60,6 +65,7 @@ public class AcceptOrderTest extends BaseTest {
         CourierSteps.createCourier(courier);
         Integer courierId = CourierSteps.loginCourier(new LoginCourier(login, password)).getId();
         this.createdCourierId = courierId;
+
         Order order = new Order("Сидор", "Сидоров", "Москва, ул. Тестовая, д. 3", "3", "+79995556677");
         CreateOrderResponse createOrderResponse = OrderSteps.createOrder(order);
         Integer trackNumber = createOrderResponse.getTrack();
@@ -72,7 +78,10 @@ public class AcceptOrderTest extends BaseTest {
         this.createdOrderId = orderId;
 
         // Отправляем запрос без courierId в query параметрах
-        OrderSteps.acceptOrderWithoutCourierId(orderId, 400);
+        given()
+                .put("/api/v1/orders/accept/{id}", orderId)
+                .then()
+                .statusCode(400);
     }
 
     @Test
@@ -89,10 +98,13 @@ public class AcceptOrderTest extends BaseTest {
         Integer orderId = foundOrder.getId();
         assertNotNull("ID заказа должен быть найден по трек-номеру", orderId);
         this.createdOrderId = orderId;
-        int nonExistentCourierId = 999999;
 
+        int nonExistentCourierId = 999999;
         // Отправляем запрос с несуществующим courierId
-        OrderSteps.acceptOrderWithNonExistentCourierId(orderId, nonExistentCourierId, 404);
+        given()
+                .put("/api/v1/orders/accept/{id}?courierId={courierId}", orderId, nonExistentCourierId)
+                .then()
+                .statusCode(404);
     }
 
     @Test
@@ -106,10 +118,13 @@ public class AcceptOrderTest extends BaseTest {
         CourierSteps.createCourier(courier);
         Integer courierId = CourierSteps.loginCourier(new LoginCourier(login, password)).getId();
         this.createdCourierId = courierId;
-        int nonExistentOrderId = 999999;
 
+        int nonExistentOrderId = 999999;
         // Отправляем запрос с несуществующим orderId
-        OrderSteps.acceptOrderWithNonExistentOrderId(nonExistentOrderId, courierId, 404);
+        given()
+                .put("/api/v1/orders/accept/{id}?courierId={courierId}", nonExistentOrderId, courierId)
+                .then()
+                .statusCode(404);
     }
 
     @After

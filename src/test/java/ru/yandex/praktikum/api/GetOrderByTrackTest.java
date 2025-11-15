@@ -7,6 +7,7 @@ import ru.yandex.praktikum.model.CreateOrderResponse;
 import ru.yandex.praktikum.model.GetOrderByTrackResponse;
 import ru.yandex.praktikum.model.Order;
 import ru.yandex.praktikum.steps.OrderSteps;
+
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.*;
@@ -48,13 +49,20 @@ public class GetOrderByTrackTest extends BaseTest {
     @Test
     @DisplayName("Нельзя получить заказ без трек-номера")
     public void cannotGetOrderByTrackWithoutTrackNumber() {
-        OrderSteps.getOrderByTrackWithoutNumber(400);
+        given()
+                .get("/api/v1/orders/track")
+                .then()
+                .statusCode(400);
     }
 
     @Test
     @DisplayName("Нельзя получить заказ с несуществующим трек-номером")
     public void cannotGetOrderByTrackWithNonExistentTrackNumber() {
         int nonExistentTrackNumber = 999999;
-        OrderSteps.getOrderByTrackWithNonExistentNumber(nonExistentTrackNumber, 404);
+        given()
+                .queryParam("t", nonExistentTrackNumber)
+                .get("/api/v1/orders/track")
+                .then()
+                .statusCode(404);
     }
 }

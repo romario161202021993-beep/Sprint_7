@@ -10,6 +10,7 @@ import ru.yandex.praktikum.model.CreateCourierResponse;
 import ru.yandex.praktikum.model.DeleteCourierResponse;
 import ru.yandex.praktikum.model.LoginCourier;
 import ru.yandex.praktikum.steps.CourierSteps;
+
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.*;
@@ -22,7 +23,7 @@ public class DeleteCourierTest extends BaseTest {
 
     @Before
     @DisplayName("Подготовка: создаём курьера для теста удаления")
-    public void setUp() {
+    public void setUpCourierForDeleteTest() {
         testLogin = DataGenerator.getRandomLogin();
         testPassword = DataGenerator.getRandomPassword();
         testFirstName = DataGenerator.getRandomFirstName();
@@ -40,20 +41,31 @@ public class DeleteCourierTest extends BaseTest {
         assertNotNull(response);
         assertTrue("Поле 'ok' в ответе должно быть true", response.getOk());
         // Проверяем, что курьер действительно удалён, попробовав залогиниться снова
-        CourierSteps.checkLoginFailsAfterDeletion(testLogin, testPassword, 404);
+        given()
+                .header("Content-type", "application/json")
+                .body(new LoginCourier(testLogin, testPassword))
+                .post("/api/v1/courier/login")
+                .then()
+                .statusCode(404);
     }
 
     @Test
     @DisplayName("Нельзя удалить курьера без ID")
     public void cannotDeleteCourierWithoutId() {
-        CourierSteps.deleteCourierWithoutId(400);
+        given()
+                .delete("/api/v1/courier/")
+                .then()
+                .statusCode(400);
     }
 
     @Test
     @DisplayName("Нельзя удалить курьера с несуществующим ID")
     public void cannotDeleteCourierWithNonExistentId() {
         int nonExistentId = 999999;
-        CourierSteps.deleteCourierWithNonExistentId(nonExistentId, 404);
+        given()
+                .delete("/api/v1/courier/{id}", nonExistentId)
+                .then()
+                .statusCode(404);
     }
 
     @org.junit.After
