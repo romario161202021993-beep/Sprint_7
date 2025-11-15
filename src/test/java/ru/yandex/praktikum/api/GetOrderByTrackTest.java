@@ -48,22 +48,13 @@ public class GetOrderByTrackTest extends BaseTest {
     @Test
     @DisplayName("Нельзя получить заказ без трек-номера")
     public void cannotGetOrderByTrackWithoutTrackNumber() {
-        given()
-                .get("/api/v1/orders/track")
-                .then()
-                .statusCode(400)
-                .body("message", equalTo("Недостаточно данных для поиска"));
+        OrderSteps.getOrderByTrackWithoutNumber(400);
     }
 
     @Test
     @DisplayName("Нельзя получить заказ с несуществующим трек-номером")
     public void cannotGetOrderByTrackWithNonExistentTrackNumber() {
         int nonExistentTrackNumber = 999999;
-
-        given()
-                .queryParam("t", nonExistentTrackNumber)
-                .get("/api/v1/orders/track")
-                .then()
-                .statusCode(404);
+        OrderSteps.getOrderByTrackWithNonExistentNumber(nonExistentTrackNumber, 404);
     }
 }

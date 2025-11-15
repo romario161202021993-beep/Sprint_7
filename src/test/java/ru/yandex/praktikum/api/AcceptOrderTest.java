@@ -28,7 +28,7 @@ public class AcceptOrderTest extends BaseTest {
         assertTrue("Курьер должен быть создан", createCourierResponse.getOk());
         Integer courierId = CourierSteps.loginCourier(new LoginCourier(login, password)).getId();
         assertNotNull("ID курьера должен быть получен", courierId);
-        this.createdCourierId = courierId; // Сохраняем для удаления в @After
+        this.createdCourierId = courierId;
 
         // 2. Создаём заказ
         Order order = new Order("Петр", "Петров", "Москва, ул. Тестовая, д. 2", "1", "+79997654321");
@@ -72,10 +72,7 @@ public class AcceptOrderTest extends BaseTest {
         this.createdOrderId = orderId;
 
         // Отправляем запрос без courierId в query параметрах
-        given()
-                .put("/api/v1/orders/accept/{id}", orderId)
-                .then()
-                .statusCode(400);
+        OrderSteps.acceptOrderWithoutCourierId(orderId, 400);
     }
 
     @Test
@@ -91,15 +88,11 @@ public class AcceptOrderTest extends BaseTest {
         assertNotNull("Объект заказа должен быть в ответе на получение по треку", foundOrder);
         Integer orderId = foundOrder.getId();
         assertNotNull("ID заказа должен быть найден по трек-номеру", orderId);
-        this.createdOrderId = orderId; // Сохраняем для удаления (если бы API позволял)
-
+        this.createdOrderId = orderId;
         int nonExistentCourierId = 999999;
 
         // Отправляем запрос с несуществующим courierId
-        given()
-                .put("/api/v1/orders/accept/{id}?courierId={courierId}", orderId, nonExistentCourierId)
-                .then()
-                .statusCode(404);
+        OrderSteps.acceptOrderWithNonExistentCourierId(orderId, nonExistentCourierId, 404);
     }
 
     @Test
@@ -113,14 +106,10 @@ public class AcceptOrderTest extends BaseTest {
         CourierSteps.createCourier(courier);
         Integer courierId = CourierSteps.loginCourier(new LoginCourier(login, password)).getId();
         this.createdCourierId = courierId;
-
         int nonExistentOrderId = 999999;
 
         // Отправляем запрос с несуществующим orderId
-        given()
-                .put("/api/v1/orders/accept/{id}?courierId={courierId}", nonExistentOrderId, courierId)
-                .then()
-                .statusCode(404);
+        OrderSteps.acceptOrderWithNonExistentOrderId(nonExistentOrderId, courierId, 404);
     }
 
     @After

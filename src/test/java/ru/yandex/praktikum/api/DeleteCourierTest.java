@@ -40,35 +40,20 @@ public class DeleteCourierTest extends BaseTest {
         assertNotNull(response);
         assertTrue("Поле 'ok' в ответе должно быть true", response.getOk());
         // Проверяем, что курьер действительно удалён, попробовав залогиниться снова
-        given()
-                .header("Content-type", "application/json")
-                .body(new LoginCourier(testLogin, testPassword))
-                .post("/api/v1/courier/login")
-                .then()
-                .statusCode(404)
-                .body("message", equalTo("Учетная запись не найдена"));
+        CourierSteps.checkLoginFailsAfterDeletion(testLogin, testPassword, 404);
     }
 
     @Test
     @DisplayName("Нельзя удалить курьера без ID")
     public void cannotDeleteCourierWithoutId() {
-        given()
-                .delete("/api/v1/courier/")
-                .then()
-                .statusCode(400)
-                .body("message", equalTo("Недостаточно данных для удаления курьера"));
+        CourierSteps.deleteCourierWithoutId(400);
     }
 
     @Test
     @DisplayName("Нельзя удалить курьера с несуществующим ID")
     public void cannotDeleteCourierWithNonExistentId() {
         int nonExistentId = 999999;
-
-        given()
-                .delete("/api/v1/courier/{id}", nonExistentId)
-                .then()
-                .statusCode(404)
-                .body("message", equalTo("Курьера с таким id нет"));
+        CourierSteps.deleteCourierWithNonExistentId(nonExistentId, 404);
     }
 
     @org.junit.After
