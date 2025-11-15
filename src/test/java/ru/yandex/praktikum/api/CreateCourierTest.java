@@ -8,10 +8,8 @@ import ru.yandex.praktikum.helpers.DataGenerator;
 import ru.yandex.praktikum.model.Courier;
 import ru.yandex.praktikum.model.CreateCourierResponse;
 import ru.yandex.praktikum.model.LoginCourier;
-import ru.yandex.praktikum.model.LoginCourierResponse;
 import ru.yandex.praktikum.steps.CourierSteps;
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.equalTo;
+
 import static org.junit.Assert.*;
 
 public class CreateCourierTest extends BaseTest {
@@ -44,49 +42,28 @@ public class CreateCourierTest extends BaseTest {
         CreateCourierResponse firstResponse = CourierSteps.createCourier(firstCourier);
         assertTrue("Первый курьер должен быть создан успешно", firstResponse.getOk());
         this.createdCourierLogin = login; // Сохраняем логин для удаления в @After
-
         // Логинимся, чтобы получить ID для удаления
         this.createdCourierId = CourierSteps.loginCourier(new LoginCourier(login, password)).getId();
 
         // Пытаемся создать второго с тем же логином, используя метод из Steps
-        CourierSteps.createCourier(secondCourier);
-
-        // Проверяем через прямой вызов API, что возвращается 409
-        given()
-                .header("Content-type", "application/json")
-                .body(secondCourier)
-                .post("/api/v1/courier")
-                .then()
-                .statusCode(409)
-                .body("message", equalTo("Этот логин уже используется"));
+        // Метод createCourierWithExpectedStatusCode теперь обрабатывает ожидаемый статус
+        CourierSteps.createCourierWithExpectedStatusCode(secondCourier, 409);
     }
 
     @Test
     @DisplayName("Нельзя создать курьера без логина")
     public void cannotCreateCourierWithoutLogin() {
         Courier courier = new Courier(null, DataGenerator.getRandomPassword(), DataGenerator.getRandomFirstName());
-
-        given()
-                .header("Content-type", "application/json")
-                .body(courier)
-                .post("/api/v1/courier")
-                .then()
-                .statusCode(400)
-                .body("message", equalTo("Недостаточно данных для создания учетной записи"));
+        // Метод createCourierWithExpectedStatusCode теперь обрабатывает ожидаемый статус
+        CourierSteps.createCourierWithExpectedStatusCode(courier, 400);
     }
 
     @Test
     @DisplayName("Нельзя создать курьера без пароля")
     public void cannotCreateCourierWithoutPassword() {
         Courier courier = new Courier(DataGenerator.getRandomLogin(), null, DataGenerator.getRandomFirstName());
-
-        given()
-                .header("Content-type", "application/json")
-                .body(courier)
-                .post("/api/v1/courier")
-                .then()
-                .statusCode(400)
-                .body("message", equalTo("Недостаточно данных для создания учетной записи"));
+        // Метод createCourierWithExpectedStatusCode теперь обрабатывает ожидаемый статус
+        CourierSteps.createCourierWithExpectedStatusCode(courier, 400);
     }
 
     @Test

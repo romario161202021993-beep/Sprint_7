@@ -8,8 +8,7 @@ import ru.yandex.praktikum.helpers.DataGenerator;
 import ru.yandex.praktikum.model.*;
 import ru.yandex.praktikum.steps.CourierSteps;
 import ru.yandex.praktikum.steps.OrderSteps;
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.equalTo;
+
 import static org.junit.Assert.*;
 
 public class AcceptOrderTest extends BaseTest {
@@ -71,11 +70,9 @@ public class AcceptOrderTest extends BaseTest {
         assertNotNull("ID заказа должен быть найден по трек-номеру", orderId);
         this.createdOrderId = orderId;
 
-        // Отправляем запрос без courierId в query параметрах
-        given()
-                .put("/api/v1/orders/accept/{id}", orderId)
-                .then()
-                .statusCode(400);
+        // Отправляем запрос без courierId в query параметрах через Steps
+        // Метод acceptOrderWithExpectedStatusCode теперь обрабатывает ожидаемый статус
+        OrderSteps.acceptOrderWithExpectedStatusCode(orderId, null, 400);
     }
 
     @Test
@@ -94,12 +91,9 @@ public class AcceptOrderTest extends BaseTest {
         this.createdOrderId = orderId; // Сохраняем для удаления (если бы API позволял)
 
         int nonExistentCourierId = 999999;
-
-        // Отправляем запрос с несуществующим courierId
-        given()
-                .put("/api/v1/orders/accept/{id}?courierId={courierId}", orderId, nonExistentCourierId)
-                .then()
-                .statusCode(404);
+        // Отправляем запрос с несуществующим courierId через Steps
+        // Метод acceptOrderWithExpectedStatusCode теперь обрабатывает ожидаемый статус
+        OrderSteps.acceptOrderWithExpectedStatusCode(orderId, nonExistentCourierId, 404);
     }
 
     @Test
@@ -113,14 +107,10 @@ public class AcceptOrderTest extends BaseTest {
         CourierSteps.createCourier(courier);
         Integer courierId = CourierSteps.loginCourier(new LoginCourier(login, password)).getId();
         this.createdCourierId = courierId;
-
         int nonExistentOrderId = 999999;
-
-        // Отправляем запрос с несуществующим orderId
-        given()
-                .put("/api/v1/orders/accept/{id}?courierId={courierId}", nonExistentOrderId, courierId)
-                .then()
-                .statusCode(404);
+        // Отправляем запрос с несуществующим orderId через Steps
+        // Метод acceptOrderWithExpectedStatusCode теперь обрабатывает ожидаемый статус
+        OrderSteps.acceptOrderWithExpectedStatusCode(nonExistentOrderId, courierId, 404);
     }
 
     @After

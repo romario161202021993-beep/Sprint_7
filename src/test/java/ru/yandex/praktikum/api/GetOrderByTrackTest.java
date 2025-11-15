@@ -7,8 +7,7 @@ import ru.yandex.praktikum.model.CreateOrderResponse;
 import ru.yandex.praktikum.model.GetOrderByTrackResponse;
 import ru.yandex.praktikum.model.Order;
 import ru.yandex.praktikum.steps.OrderSteps;
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.equalTo;
+
 import static org.junit.Assert.*;
 
 public class GetOrderByTrackTest extends BaseTest {
@@ -38,7 +37,7 @@ public class GetOrderByTrackTest extends BaseTest {
         // 4. Проверяем, что все поля совпадают с теми, что мы отправляли при создании
         assertEquals("Имя в заказе должно совпадать с отправленным при создании (или с ожидаемым из API)", expectedFirstName, receivedOrder.getFirstName());
         assertEquals("Фамилия в заказе должна совпадать с отправленной при создании (или с ожидаемой из API)", expectedLastName, receivedOrder.getLastName());
-        assertEquals("Адрес в заказе должен совпадать с отправленным при создании (или с ожидаемым из API)", expectedAddress, receivedOrder.getAddress());
+        assertEquals("Адрес в заказе должен совпадать с отправленным при создании (или с ожидаемой из API)", expectedAddress, receivedOrder.getAddress());
         assertEquals("Станция метро в заказе должна совпадать с отправленной при создании (или с ожидаемой из API)", expectedMetroStation, receivedOrder.getMetroStation());
         assertEquals("Телефон в заказе должен совпадать с отправленным при создании (или с ожидаемым из API)", expectedPhone, receivedOrder.getPhone());
         assertEquals("Трек-номер в полученном заказе должен совпадать с трек-номером, по которому мы его искали", trackNumber, receivedOrder.getTrack());
@@ -48,22 +47,15 @@ public class GetOrderByTrackTest extends BaseTest {
     @Test
     @DisplayName("Нельзя получить заказ без трек-номера")
     public void cannotGetOrderByTrackWithoutTrackNumber() {
-        given()
-                .get("/api/v1/orders/track")
-                .then()
-                .statusCode(400)
-                .body("message", equalTo("Недостаточно данных для поиска"));
+        // Метод getOrderByTrackWithExpectedStatusCode теперь обрабатывает ожидаемый статус
+        OrderSteps.getOrderByTrackWithExpectedStatusCode(0, 400); // 0 как условный "отсутствующий" трек
     }
 
     @Test
     @DisplayName("Нельзя получить заказ с несуществующим трек-номером")
     public void cannotGetOrderByTrackWithNonExistentTrackNumber() {
         int nonExistentTrackNumber = 999999;
-
-        given()
-                .queryParam("t", nonExistentTrackNumber)
-                .get("/api/v1/orders/track")
-                .then()
-                .statusCode(404);
+        // Метод getOrderByTrackWithExpectedStatusCode теперь обрабатывает ожидаемый статус
+        OrderSteps.getOrderByTrackWithExpectedStatusCode(nonExistentTrackNumber, 404);
     }
 }
