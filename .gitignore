@@ -50,3 +50,7 @@ Thumbs.db
 !/target/allure-results/
 /target/allure-results/
 !/target/allure-results/**
+
+# JVM crash logs
+hs_err_pid*.log
+replay_pid*.log
