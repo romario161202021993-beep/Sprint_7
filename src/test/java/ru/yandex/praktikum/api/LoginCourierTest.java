@@ -11,8 +11,6 @@ import ru.yandex.praktikum.model.CreateCourierResponse;
 import ru.yandex.praktikum.model.LoginCourier;
 import ru.yandex.praktikum.steps.CourierSteps;
 
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.*;
 
 public class LoginCourierTest extends BaseTest {
@@ -39,64 +37,43 @@ public class LoginCourierTest extends BaseTest {
     @DisplayName("Успешный логин курьера")
     public void loginCourierSuccessfully() {
         LoginCourier loginData = new LoginCourier(testLogin, testPassword);
+        // Проверяем статус-код 200 и получаем объект ответа
+        CourierSteps.checkLoginCourierStatusCode(loginData, 200);
         ru.yandex.praktikum.model.LoginCourierResponse response = CourierSteps.loginCourier(loginData);
         assertNotNull(response);
         assertNotNull("ID курьера должен быть в ответе", response.getId());
-        // Добавлена проверка статус-кода
-        given()
-                .header("Content-type", "application/json")
-                .body(loginData)
-                .post("/api/v1/courier/login")
-                .then()
-                .statusCode(200); // Ожидаем 200 OK
     }
 
     @Test
     @DisplayName("Нельзя залогиниться без логина")
     public void cannotLoginWithoutLogin() {
         LoginCourier loginData = new LoginCourier(null, testPassword);
-        given()
-                .header("Content-type", "application/json")
-                .body(loginData)
-                .post("/api/v1/courier/login")
-                .then()
-                .statusCode(400);
+        // Проверяем статус-код 400
+        CourierSteps.checkLoginCourierStatusCode(loginData, 400);
     }
 
     @Test
     @DisplayName("Нельзя залогиниться без пароля")
     public void cannotLoginWithoutPassword() {
         LoginCourier loginData = new LoginCourier(testLogin, null);
-        given()
-                .header("Content-type", "application/json")
-                .body(loginData)
-                .post("/api/v1/courier/login")
-                .then()
-                .statusCode(400);
+        // Проверяем статус-код 400
+        CourierSteps.checkLoginCourierStatusCode(loginData, 400);
     }
 
     @Test
     @DisplayName("Нельзя залогиниться с неправильным логином")
     public void cannotLoginWithIncorrectLogin() {
         LoginCourier loginData = new LoginCourier("wrong_login", testPassword);
-        given()
-                .header("Content-type", "application/json")
-                .body(loginData)
-                .post("/api/v1/courier/login")
-                .then()
-                .statusCode(404);
+        // Проверяем статус-код 404
+        CourierSteps.checkLoginCourierStatusCode(loginData, 404);
     }
 
     @Test
     @DisplayName("Нельзя залогиниться с неправильным паролем")
     public void cannotLoginWithIncorrectPassword() {
         LoginCourier loginData = new LoginCourier(testLogin, "wrong_password");
-        given()
-                .header("Content-type", "application/json")
-                .body(loginData)
-                .post("/api/v1/courier/login")
-                .then()
-                .statusCode(404);
+        // Проверяем статус-код 404
+        CourierSteps.checkLoginCourierStatusCode(loginData, 404);
     }
 
     @After

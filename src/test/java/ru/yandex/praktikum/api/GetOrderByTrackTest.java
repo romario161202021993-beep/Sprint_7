@@ -8,8 +8,6 @@ import ru.yandex.praktikum.model.GetOrderByTrackResponse;
 import ru.yandex.praktikum.model.Order;
 import ru.yandex.praktikum.steps.OrderSteps;
 
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.*;
 
 public class GetOrderByTrackTest extends BaseTest {
@@ -30,7 +28,8 @@ public class GetOrderByTrackTest extends BaseTest {
         Integer trackNumber = createResponse.getTrack();
         assertNotNull("Трек-номер должен быть получен из ответа на создание", trackNumber);
 
-        // 3. Получаем заказ по трек-номеру
+        // 3. Получаем заказ по трек-номеру и проверяем статус-код
+        OrderSteps.checkGetOrderByTrackStatusCode(trackNumber, 200);
         GetOrderByTrackResponse response = OrderSteps.getOrderByTrack(trackNumber);
         assertNotNull("Ответ на получение заказа по треку не должен быть null", response);
         Order receivedOrder = response.getOrder();
@@ -49,20 +48,15 @@ public class GetOrderByTrackTest extends BaseTest {
     @Test
     @DisplayName("Нельзя получить заказ без трек-номера")
     public void cannotGetOrderByTrackWithoutTrackNumber() {
-        given()
-                .get("/api/v1/orders/track")
-                .then()
-                .statusCode(400);
+        // Проверяем статус-код 400
+        OrderSteps.checkGetOrderByTrackStatusCodeWithoutTrackNumber(400);
     }
 
     @Test
     @DisplayName("Нельзя получить заказ с несуществующим трек-номером")
     public void cannotGetOrderByTrackWithNonExistentTrackNumber() {
         int nonExistentTrackNumber = 999999;
-        given()
-                .queryParam("t", nonExistentTrackNumber)
-                .get("/api/v1/orders/track")
-                .then()
-                .statusCode(404);
+        // Проверяем статус-код 404
+        OrderSteps.checkGetOrderByTrackStatusCode(nonExistentTrackNumber, 404);
     }
 }

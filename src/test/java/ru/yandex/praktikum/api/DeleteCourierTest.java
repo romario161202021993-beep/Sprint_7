@@ -37,35 +37,27 @@ public class DeleteCourierTest extends BaseTest {
     @Test
     @DisplayName("Успешное удаление курьера")
     public void deleteCourierSuccessfully() {
+        // Проверяем статус-код 200 и получаем объект ответа
+        CourierSteps.checkDeleteCourierStatusCode(createdCourierId, 200);
         DeleteCourierResponse response = CourierSteps.deleteCourier(createdCourierId);
         assertNotNull(response);
         assertTrue("Поле 'ok' в ответе должно быть true", response.getOk());
+
         // Проверяем, что курьер действительно удалён, попробовав залогиниться снова
-        given()
-                .header("Content-type", "application/json")
-                .body(new LoginCourier(testLogin, testPassword))
-                .post("/api/v1/courier/login")
-                .then()
-                .statusCode(404);
+        CourierSteps.checkLoginCourierStatusCode(new LoginCourier(testLogin, testPassword), 404);
     }
 
     @Test
     @DisplayName("Нельзя удалить курьера без ID")
     public void cannotDeleteCourierWithoutId() {
-        given()
-                .delete("/api/v1/courier/")
-                .then()
-                .statusCode(400);
+        CourierSteps.checkDeleteCourierWithoutIdStatusCode(400); // Ожидаем 400, если документация указывает на это, иначе 404
     }
 
     @Test
     @DisplayName("Нельзя удалить курьера с несуществующим ID")
     public void cannotDeleteCourierWithNonExistentId() {
         int nonExistentId = 999999;
-        given()
-                .delete("/api/v1/courier/{id}", nonExistentId)
-                .then()
-                .statusCode(404);
+        CourierSteps.checkDeleteCourierStatusCode(nonExistentId, 404);
     }
 
     @org.junit.After

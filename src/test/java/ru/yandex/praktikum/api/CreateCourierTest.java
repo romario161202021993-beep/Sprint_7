@@ -10,8 +10,6 @@ import ru.yandex.praktikum.model.CreateCourierResponse;
 import ru.yandex.praktikum.model.LoginCourier;
 import ru.yandex.praktikum.steps.CourierSteps;
 
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.*;
 
 public class CreateCourierTest extends BaseTest {
@@ -26,15 +24,11 @@ public class CreateCourierTest extends BaseTest {
                 DataGenerator.getRandomPassword(),
                 DataGenerator.getRandomFirstName()
         );
+        // Проверяем статус-код 201 и получаем объект ответа
+        CourierSteps.checkCreateCourierStatusCode(courier, 201);
         CreateCourierResponse response = CourierSteps.createCourier(courier);
         assertNotNull(response);
         assertTrue("Поле 'ok' в ответе должно быть true", response.getOk());
-        given()
-                .header("Content-type", "application/json")
-                .body(courier)
-                .post("/api/v1/courier")
-                .then()
-                .statusCode(201);
     }
 
     @Test
@@ -53,52 +47,36 @@ public class CreateCourierTest extends BaseTest {
 
         // Логинимся, чтобы получить ID для удаления
         this.createdCourierId = CourierSteps.loginCourier(new LoginCourier(login, password)).getId();
-        given()
-                .header("Content-type", "application/json")
-                .body(secondCourier)
-                .post("/api/v1/courier")
-                .then()
-                .statusCode(409); // Ожидаем 409 Conflict
+
+        // Проверяем статус-код 409 для второго запроса
+        CourierSteps.checkCreateCourierStatusCode(secondCourier, 409);
     }
 
     @Test
     @DisplayName("Нельзя создать курьера без логина")
     public void cannotCreateCourierWithoutLogin() {
         Courier courier = new Courier(null, DataGenerator.getRandomPassword(), DataGenerator.getRandomFirstName());
-        given()
-                .header("Content-type", "application/json")
-                .body(courier)
-                .post("/api/v1/courier")
-                .then()
-                .statusCode(400);
+        // Проверяем статус-код 400
+        CourierSteps.checkCreateCourierStatusCode(courier, 400);
     }
 
     @Test
     @DisplayName("Нельзя создать курьера без пароля")
     public void cannotCreateCourierWithoutPassword() {
         Courier courier = new Courier(DataGenerator.getRandomLogin(), null, DataGenerator.getRandomFirstName());
-        given()
-                .header("Content-type", "application/json")
-                .body(courier)
-                .post("/api/v1/courier")
-                .then()
-                .statusCode(400);
+        // Проверяем статус-код 400
+        CourierSteps.checkCreateCourierStatusCode(courier, 400);
     }
 
     @Test
     @DisplayName("Можно создать курьера без firstName (реальное поведение API)")
     public void canCreateCourierWithoutFirstName() {
         Courier courier = new Courier(DataGenerator.getRandomLogin(), DataGenerator.getRandomPassword(), null);
+        // Проверяем статус-код 201 и получаем объект ответа
+        CourierSteps.checkCreateCourierStatusCode(courier, 201);
         CreateCourierResponse response = CourierSteps.createCourier(courier);
         assertNotNull(response);
         assertTrue("Поле 'ok' в ответе должно быть true, так как API позволяет создать курьера без firstName", response.getOk());
-        // Добавлена проверка статус-кода
-        given()
-                .header("Content-type", "application/json")
-                .body(courier)
-                .post("/api/v1/courier")
-                .then()
-                .statusCode(201);
     }
 
     @After
